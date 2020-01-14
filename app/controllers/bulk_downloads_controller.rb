@@ -27,6 +27,23 @@ class BulkDownloadsController < ApplicationController
     render json: download_types
   end
 
+  # POST /bulk_downloads/filter
+  # Filter out samples with pipeline runs that failed or are still in progress
+  # when a user requests a bulk download. Returns an array of valid pipeline run ids.
+  # def filter
+  #   filter_params = bulk_download_filter_params
+  #   begin
+  #     finished_pipeline_run_ids = validate_bulk_download_create_params(create_params, current_user)
+  #   rescue => e
+  #     # Throw an error if any sample doesn't have a valid pipeline run.
+  #     # The user should never see this error, because the validation step should catch any issues.
+  #     LogUtil.log_backtrace(e)
+  #     LogUtil.log_err_and_airbrake("BulkDownloadsFailedEvent: Unexpected issue filtering bulk download: #{e}")
+  #     render json: { error: e }, status: :unprocessable_entity
+  #   end
+  #   render json: { validPipelineRuns: finished_pipeline_run_ids }
+  # end
+
   # POST /bulk_downloads
   def create
     create_params = bulk_download_create_params
