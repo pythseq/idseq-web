@@ -31,7 +31,7 @@ class IssueGroup extends React.Component {
             ) : (
               <AlertIcon className={cx(cs.icon, cs[this.props.type])} />
             )}
-            {this.props.caption}
+            <div className={cs.caption}>{this.props.caption}</div>
           </div>
         }
         open={initialOpen}

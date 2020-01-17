@@ -36,8 +36,11 @@
 
 .header {
   display: flex;
-  align-items: center;
   padding: 10px;
+
+  .caption {
+    flex: 1 1 0;
+  }
 
   .icon {
     width: 20px;
