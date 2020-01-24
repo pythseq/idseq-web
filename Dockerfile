@@ -34,13 +34,18 @@ RUN npm update -g
 COPY package.json package-lock.json ./
 RUN npm install
 
-# Copy the main application.
-COPY . ./
+# Copy directories that will be bundled by webpack.
+RUN mkdir -p app/assets/
+COPY app/assets app/assets/
+COPY webpack.config.prod.js webpack.config.common.js .babelrc ./
 
 # Generate the app's static resources using npm/webpack
 # Increase memory available to node to 6GB (from default 1.5GB). At this Travis runs on 7.5GB instances.
 ENV NODE_OPTIONS "--max_old_space_size=6144"
 RUN mkdir -p app/assets/dist && npm run build-img && ls -l app/assets/dist/
+
+# Copy the main application.
+COPY . ./
 
 ARG GIT_COMMIT
 ENV GIT_VERSION ${GIT_COMMIT}

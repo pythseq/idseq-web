@@ -17,7 +17,8 @@ echo '--'
 
 # need to pull images for cache_from first
 docker pull $LATEST_TAG || true
-docker pull $COMPOSE_TAG || true
+BRANCH_CLEANED=`echo $BRANCH | sed 's/\//-/g'`
+docker pull $REPO:"branch-$BRANCH_CLEANED" || true
 
 docker-compose build --build-arg GIT_COMMIT=${COMMIT} web
 
@@ -25,6 +26,5 @@ if [ "$BRANCH" == "master" ]; then
   docker tag $COMPOSE_TAG $LATEST_TAG
 fi
 docker tag $COMPOSE_TAG $REPO:"sha-$COMMIT"
-BRANCH_CLEANED=`echo $BRANCH | sed 's/\//-/g'`
 docker tag $COMPOSE_TAG $REPO:"branch-$BRANCH_CLEANED"
 docker tag $COMPOSE_TAG $REPO:"build-$BUILD_NUMBER"
