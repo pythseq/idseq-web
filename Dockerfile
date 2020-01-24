@@ -35,7 +35,7 @@ COPY package.json package-lock.json ./
 RUN npm install
 
 # Copy directories that will be bundled by webpack.
-RUN mkdir -p app/assets/
+RUN mkdir -p app/assets
 COPY app/assets app/assets/
 COPY webpack.config.prod.js webpack.config.common.js .babelrc ./
 

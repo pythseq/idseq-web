@@ -6,6 +6,8 @@ rvm:
 - 2.5
 services:
   - docker
+# Don't bundle install Gemfile, since we use Docker.
+install: skip
 jobs:
   include:
     - stage: docker-build
@@ -16,6 +18,7 @@ jobs:
     - stage: test
       name: "tests"
       script:
+        - mkdir -p ~/.aws && printf "[default]\nregion = $AWS_REGION\naws_access_key_id = $AWS_ACCESS_KEY_ID\naws_secret_access_key = $AWS_SECRET_ACCESS_KEY\n" > ~/.aws/credentials
         - docker-compose run --rm webtest "./node_modules/.bin/eslint app/assets/src --ext .js,.jsx"
         - echo "quit" | docker-compose run --rm webtest "rails dbconsole"
         - docker-compose run --rm webtest "rubocop -R --config .rubocop_todo.yml"
@@ -29,6 +32,7 @@ jobs:
     - stage: test
       name: "rspec"
       script:
+        - mkdir -p ~/.aws && printf "[default]\nregion = $AWS_REGION\naws_access_key_id = $AWS_ACCESS_KEY_ID\naws_secret_access_key = $AWS_SECRET_ACCESS_KEY\n" > ~/.aws/credentials
         - docker-compose run --rm webtest "rake db:drop db:create db:migrate db:seed"
         - docker-compose run --rm webtest "rspec"
 env:
