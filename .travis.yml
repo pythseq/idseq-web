@@ -8,9 +8,10 @@ jobs:
     - name: "Rails Test"
       language: ruby
       cache: 
-        - bundler
-        - pip
-        - npm
+        bundler: true
+        directories:
+          - node_modules
+          - /usr/local/lib/python2.7/site-packages
       env:
         - RAILS_ENV: test
         - DB_USERNAME: travis
@@ -38,8 +39,9 @@ jobs:
     - name: "Rspec"
       language: ruby
       cache: 
-        - bundler
-        - pip
+        bundler: true
+        directories:
+          - /usr/local/lib/python2.7/site-packages
       env:
         - RAILS_ENV: test
         - DB_USERNAME: travis
@@ -73,7 +75,7 @@ jobs:
     - name: "Python Test"
       language: python
       python: 2.7
-      cache:  pip
+      cache: pip
       install: pip install -r requirements.txt
       script:
         - pip install mock
