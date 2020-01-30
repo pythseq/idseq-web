@@ -15,6 +15,7 @@ jobs:
         - RAILS_ENV: test
         - DB_USERNAME: travis
         - DB_PASSWORD: root
+        - NODE_OPTIONS: "--max_old_space_size=6144"
       services:
         - mysql
         - redis
