@@ -22,10 +22,13 @@ jobs:
       install:
         - bundle install
         - gem install brakeman
-        - sudo apt-get update && sudo apt-get install -y build-essential python-dev python-pip
+        - sudo curl -sL https://deb.nodesource.com/setup_10.x | bash -
+        - sudo apt-get update && sudo apt-get install -y build-essential python-dev python-pip nodejs
         - sudo pip install --upgrade pip
-        - sudo pip install -r requirements.txt --ignore-installed PyYAML
-      before_script: rake db:create db:migrate db:seed
+        - sudo pip install -r requirements.txt --ignore-installed PyYAML  
+      before_script:
+        - ./node_modules/.bin/eslint app/assets/src --ext .js,.jsx
+        - rake db:create db:migrate db:seed
       script: rails test
     - name: "Rspec"
       language: ruby
@@ -55,6 +58,7 @@ jobs:
       install:
         - bundle install
         - gem install brakeman
+      # Block on High Confidence warnings
       script: brakeman --no-pager -w3
     - name: "Rubocop"
       language: ruby
@@ -68,9 +72,10 @@ jobs:
       install: pip install -r requirements.txt
       script:
         - pip install mock
-        - python -m unittest discover -v -s /app/test/ -p 'test_*.py'
+        - python -m unittest discover -v -s test/ -p 'test_*.py'
         - name: "Python Test"
-    - language: node_js
+    - name: "JS Test"
+      language: node_js
       node_js: 10
       install: npm install
       script: npm test
