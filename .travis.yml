@@ -10,6 +10,7 @@ jobs:
       cache: 
         - bundler
         - pip
+        - npm
       env:
         - RAILS_ENV: test
         - DB_USERNAME: travis
@@ -25,7 +26,8 @@ jobs:
         - curl -sL https://deb.nodesource.com/setup_10.x | sudo bash -
         - sudo apt-get update && sudo apt-get install -y build-essential python-dev python-pip nodejs
         - sudo pip install --upgrade pip
-        - sudo pip install -r requirements.txt --ignore-installed PyYAML  
+        - sudo pip install -r requirements.txt --ignore-installed PyYAML
+        - npm install
       before_script:
         - ./node_modules/.bin/eslint app/assets/src --ext .js,.jsx
         - rake db:create db:migrate db:seed
