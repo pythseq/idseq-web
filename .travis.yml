@@ -6,6 +6,9 @@ rvm:
 jobs:
   include:
     - language: ruby
+      cache: 
+        - bundler
+        - pip
       env:
         - RAILS_ENV: test
         - DB_USERNAME: travis
