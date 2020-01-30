@@ -16,6 +16,7 @@ jobs:
         - DB_USERNAME: travis
         - DB_PASSWORD: root
         - NODE_OPTIONS: "--max_old_space_size=6144"
+        - SAMPLES_BUCKET_NAME: idseq-samples-development
       services:
         - mysql
         - redis
