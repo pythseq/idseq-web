@@ -1,7 +1,6 @@
 require 'open3'
 require 'json'
 require 'tempfile'
-require 'aws-sdk'
 require 'elasticsearch/model'
 # TODO(mark): Move to an initializer. Make sure this works with Rails auto-reloading.
 
