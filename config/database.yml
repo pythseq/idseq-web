@@ -14,7 +14,7 @@ development:
 
 test:
   <<: *default
-  host: db
+  host: "127.0.0.1"
 
 deployed: &deployed
   <<: *default
