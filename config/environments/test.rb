@@ -23,7 +23,7 @@ Rails.application.configure do
 
   # Configure caching to be the same as development
   config.action_controller.perform_caching = true
-  config.cache_store = :redis_store, 'redis://redis:6379/0/cache',
+  config.cache_store = :redis_store, 'redis://127.0.0.1:6379/0/cache',
                        {
                          # Needed for redis to evict keys in volatile-lru mode
                          expires_in: 30.days,

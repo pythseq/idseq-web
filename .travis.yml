@@ -8,7 +8,7 @@ jobs:
   include:
     - language: ruby
       env:
-        - RAILS_ENV: ci
+        - RAILS_ENV: test
         - RDS_ADDRESS: "127.0.0.1"
         - DB_USERNAME: travis
         - DB_PASSWORD: root
