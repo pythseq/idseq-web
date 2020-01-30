@@ -22,12 +22,11 @@ jobs:
         - mysql
         - redis
       before_install:
+        - nvm install 10
         - mkdir -p ~/.aws && printf "[default]\nregion = $AWS_REGION\naws_access_key_id = $AWS_ACCESS_KEY_ID\naws_secret_access_key = $AWS_SECRET_ACCESS_KEY\n" > ~/.aws/credentials
       install:
         - bundle install
-        - gem install brakeman
-        - curl -sL https://deb.nodesource.com/setup_10.x | sudo bash -
-        - sudo apt-get update && sudo apt-get install -y build-essential python-dev python-pip nodejs
+        - sudo apt-get update && sudo apt-get install -y build-essential python-dev python-pip
         - sudo pip install --upgrade pip
         - sudo pip install -r requirements.txt --ignore-installed PyYAML
         - npm install
@@ -53,7 +52,6 @@ jobs:
         - mkdir -p ~/.aws && printf "[default]\nregion = $AWS_REGION\naws_access_key_id = $AWS_ACCESS_KEY_ID\naws_secret_access_key = $AWS_SECRET_ACCESS_KEY\n" > ~/.aws/credentials
       install:
         - bundle install
-        - gem install brakeman
         - sudo apt-get update && sudo apt-get install -y build-essential python-dev python-pip
         - sudo pip install --upgrade pip
         - sudo pip install -r requirements.txt --ignore-installed PyYAML
@@ -62,9 +60,7 @@ jobs:
     - name: "Brakeman"
       language: ruby
       cache: bundler
-      install:
-        - bundle install
-        - gem install brakeman
+      install: bundle install
       # Block on High Confidence warnings
       script: brakeman --no-pager -w3
     - name: "Rubocop"

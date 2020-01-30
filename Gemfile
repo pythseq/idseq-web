@@ -7,7 +7,8 @@ end
 
 gem 'airbrake', '~> 9.5'
 gem 'aws-sdk-ecs'
-gem 'aws-sdk-resources'
+gem 'aws-sdk-s3'
+gem 'aws-sdk-ssm'
 gem 'brakeman'
 # Use ActiveModel has_secure_password
 gem 'bcrypt', '~> 3.1.7'
@@ -52,8 +53,6 @@ gem 'turbolinks', '~> 5'
 # Use Uglifier as compressor for JavaScript assets
 gem 'uglifier', '>= 1.3.0'
 gem 'will_paginate'
-# Use AWS-SDK to make AWS requests with byte range
-gem 'aws-sdk'
 # Redirect
 gem 'activesupport'
 gem 'rack-host-redirect'
