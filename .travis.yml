@@ -18,12 +18,14 @@ jobs:
       install:
         - bundle install
         - gem install brakeman
+        - apt-get update && apt-get install -y build-essential python-dev python-pip
+        - pip install --upgrade pip
+        - pip install -r requirements.txt
       before_script:
-        - rake db:create
+        - rake db:create db:migrate db:seed
       script:
         - rubocop -R --config .rubocop_todo.yml
         - rails test
-        - rake db:drop db:create db:migrate db:seed
         - rspec
         - brakeman --no-pager -w3
 env:
