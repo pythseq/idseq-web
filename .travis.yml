@@ -1,5 +1,4 @@
 language: ruby
-sudo: required
 env:
   CI: yes
 rvm:
@@ -14,7 +13,7 @@ jobs:
         - DB_PASSWORD: root
       services:
         - mysql
-        - redis-server
+        - redis
       before_install:
         - mkdir -p ~/.aws && printf "[default]\nregion = $AWS_REGION\naws_access_key_id = $AWS_ACCESS_KEY_ID\naws_secret_access_key = $AWS_SECRET_ACCESS_KEY\n" > ~/.aws/credentials
       install:
