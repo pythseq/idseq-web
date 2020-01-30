@@ -22,7 +22,7 @@ jobs:
       install:
         - bundle install
         - gem install brakeman
-        - sudo curl -sL https://deb.nodesource.com/setup_10.x | bash -
+        - curl -sL https://deb.nodesource.com/setup_10.x | sudo bash -
         - sudo apt-get update && sudo apt-get install -y build-essential python-dev python-pip nodejs
         - sudo pip install --upgrade pip
         - sudo pip install -r requirements.txt --ignore-installed PyYAML  
@@ -73,7 +73,6 @@ jobs:
       script:
         - pip install mock
         - python -m unittest discover -v -s test/ -p 'test_*.py'
-        - name: "Python Test"
     - name: "JS Test"
       language: node_js
       node_js: 10
