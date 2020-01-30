@@ -6,36 +6,18 @@ rvm:
 jobs:
   include:
     - name: "Rails Test"
-      language: ruby
-      cache: 
-        bundler: true
-        directories:
-          - node_modules
-          - /usr/local/lib/python2.7/site-packages
-      env:
-        - RAILS_ENV: test
-        - DB_USERNAME: travis
-        - DB_PASSWORD: root
-        - NODE_OPTIONS: "--max_old_space_size=6144"
-        - SAMPLES_BUCKET_NAME: idseq-samples-development
+      language: minimal
       services:
         - mysql
         - redis
+        - docker
       before_install:
-        - nvm install 10
-        - nvm use 10
         - mkdir -p ~/.aws && printf "[default]\nregion = $AWS_REGION\naws_access_key_id = $AWS_ACCESS_KEY_ID\naws_secret_access_key = $AWS_SECRET_ACCESS_KEY\n" > ~/.aws/credentials
-      install:
-        - bundle install
-        - sudo apt-get update && sudo apt-get install -y build-essential python-dev python-pip
-        - sudo pip install --upgrade pip
-        - sudo pip install -r requirements.txt --ignore-installed PyYAML
-        - npm install
       before_script:
-        - mkdir -p app/assets/dist 
-        - npm run build-img
-        - rake db:create db:migrate db:seed
-      script: rails test
+        - docker pull chanzuckerberg/idseq-web
+        - docker build -t chanzuckerberg/idseq-web .
+        - docker -e RAILS_ENV=test -e DB_USERNAME=travis -e DB_PASSWORD=root -e NODE_OPTIONS=--max_old_space_size=6144 -e SAMPLES_BUCKET_NAME=idseq-samples-development --network host run chanzuckerberg/idseq-web rake db:create db:migrate db:seed
+      script: docker -e RAILS_ENV=test -e DB_USERNAME=travis -e DB_PASSWORD=root -e NODE_OPTIONS=--max_old_space_size=6144 -e SAMPLES_BUCKET_NAME=idseq-samples-development --network host run chanzuckerberg/idseq-web test
     - name: "Rspec"
       language: ruby
       cache: 
