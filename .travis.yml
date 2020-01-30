@@ -8,10 +8,11 @@ jobs:
   include:
     - language: ruby
       env:
+        - RAILS_ENV: ci
+        - RDS_ADDRESS: "127.0.0.1"
         - DB_USERNAME: travis
         - DB_PASSWORD: root
       services:
-        - docker
         - mysql
         - redis-server
       before_install:
