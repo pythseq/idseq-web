@@ -5,7 +5,8 @@ rvm:
 - 2.5
 jobs:
   include:
-    - language: ruby
+    - name: "Rails Test"
+      language: ruby
       cache: 
         - bundler
         - pip
@@ -24,18 +25,39 @@ jobs:
         - sudo apt-get update && sudo apt-get install -y build-essential python-dev python-pip
         - sudo pip install --upgrade pip
         - sudo pip install -r requirements.txt --ignore-installed PyYAML
-      before_script:
-        - rake db:create db:migrate db:seed
-      script:
-        - rails test
-        - rspec
-    - language: ruby
+      before_script: rake db:create db:migrate db:seed
+      script: rails test
+    - name: "Rspec"
+      language: ruby
+      cache: 
+        - bundler
+        - pip
+      env:
+        - RAILS_ENV: test
+        - DB_USERNAME: travis
+        - DB_PASSWORD: root
+      services:
+        - mysql
+        - redis
+      before_install:
+        - mkdir -p ~/.aws && printf "[default]\nregion = $AWS_REGION\naws_access_key_id = $AWS_ACCESS_KEY_ID\naws_secret_access_key = $AWS_SECRET_ACCESS_KEY\n" > ~/.aws/credentials
+      install:
+        - bundle install
+        - gem install brakeman
+        - sudo apt-get update && sudo apt-get install -y build-essential python-dev python-pip
+        - sudo pip install --upgrade pip
+        - sudo pip install -r requirements.txt --ignore-installed PyYAML
+      before_script: rake db:create db:migrate db:seed
+      script:  rspec    
+    - name: "Brakeman"
+      language: ruby
       cache: bundler
       install:
         - bundle install
         - gem install brakeman
       script: brakeman --no-pager -w3
-    - language: ruby
+    - name: "Rubocop"
+      language: ruby
       cache:  bundler
       install: bundle install
       script: rubocop -R --config .rubocop_todo.yml
