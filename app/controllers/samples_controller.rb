@@ -54,6 +54,8 @@ class SamplesController < ApplicationController
     allowed_feature_required("AMR")
   end
 
+  skip_before_action :authenticate_user!, [:show, :show_v2]
+
   around_action :instrument_with_timer
 
   PAGE_SIZE = 30
@@ -697,6 +699,7 @@ class SamplesController < ApplicationController
   # GET /samples/1
   # GET /samples/1.json
   def show
+    return show_v2
     if !params[:legacy] && current_user.allowed_feature_list.include?("report_v2")
       show_v2
     else
