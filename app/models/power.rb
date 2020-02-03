@@ -1,7 +1,7 @@
 class Power
   include Consul::Power
 
-  def initialize(user)
+  def initialize(_user)
     @user = User.find(1)
   end
 
