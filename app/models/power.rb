@@ -2,7 +2,7 @@ class Power
   include Consul::Power
 
   def initialize(user)
-    @user = user
+    @user = User.find(1)
   end
 
   power :backgrounds do

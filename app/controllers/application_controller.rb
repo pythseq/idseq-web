@@ -71,7 +71,7 @@ class ApplicationController < ActionController::Base
   def append_info_to_payload(payload)
     super
     payload[:remote_ip] = request.remote_ip
-    payload[:user_id] = current_user.try(:id) if current_user
+    payload[:user_id] = 1 # current_user.try(:id) if current_user
   end
 
   def disable_header_navigation
