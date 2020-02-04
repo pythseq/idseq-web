@@ -763,26 +763,26 @@ class SamplesController < ApplicationController
     ]
     puts "sample is: ", @sample, ";"
     respond_to do |format|
-      format.html {
+      format.html do
         puts "render as HTML"
         render 'show_v2'
-      }
+      end
       format.json do
         res = @sample
-          .as_json(
-            methods: [],
-            only: default_fields,
-            include: {
-              project: {
-                only: [:id, :name],
-              },
-            }
-          ).merge(
-            default_pipeline_run_id: @sample.first_pipeline_run.present? ? @sample.first_pipeline_run.id : nil,
-            pipeline_runs: @sample.pipeline_runs_info,
-            deletable: @sample.deletable?(current_user),
-            editable: current_power.updatable_sample?(@sample)
-          )
+              .as_json(
+                methods: [],
+                only: default_fields,
+                include: {
+                  project: {
+                    only: [:id, :name],
+                  },
+                }
+              ).merge(
+                default_pipeline_run_id: @sample.first_pipeline_run.present? ? @sample.first_pipeline_run.id : nil,
+                pipeline_runs: @sample.pipeline_runs_info,
+                deletable: @sample.deletable?(current_user),
+                editable: current_power.updatable_sample?(@sample)
+              )
         puts "foobar 1:55pm: ", res, "END"
         render json: res
       end
