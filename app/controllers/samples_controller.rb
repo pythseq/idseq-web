@@ -47,9 +47,6 @@ class SamplesController < ApplicationController
   before_action :assert_access, only: OTHER_ACTIONS # Actions which don't require access control check
   before_action :check_owner, only: OWNER_ACTIONS
   before_action :check_access
-  before_action only: :show_v2 do
-    allowed_feature_required("report_v2")
-  end
   before_action only: :amr do
     allowed_feature_required("AMR")
   end
@@ -764,10 +761,14 @@ class SamplesController < ApplicationController
       :host_genome_id,
       :upload_error,
     ]
+    puts "sample is: ", @sample, ";"
     respond_to do |format|
-      format.html { render 'show_v2' }
+      format.html {
+        puts "render as HTML"
+        render 'show_v2'
+      }
       format.json do
-        render json: @sample
+        res = @sample
           .as_json(
             methods: [],
             only: default_fields,
@@ -782,6 +783,8 @@ class SamplesController < ApplicationController
             deletable: @sample.deletable?(current_user),
             editable: current_power.updatable_sample?(@sample)
           )
+        puts "foobar 1:55pm: ", res, "END"
+        render json: res
       end
     end
   end
