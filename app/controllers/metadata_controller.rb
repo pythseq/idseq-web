@@ -6,6 +6,8 @@ class MetadataController < ApplicationController
   skip_before_action :verify_authenticity_token, only: TOKEN_AUTH_METHODS
   prepend_before_action :token_based_login_support, only: TOKEN_AUTH_METHODS
 
+  skip_before_action :authenticate_user!
+
   def dictionary
   end
 

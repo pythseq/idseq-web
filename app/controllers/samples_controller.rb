@@ -51,7 +51,7 @@ class SamplesController < ApplicationController
     allowed_feature_required("AMR")
   end
 
-  skip_before_action :authenticate_user!, only: [:show, :show_v2, :report_v2]
+  skip_before_action :authenticate_user!, only: [:show, :show_v2, :report_v2, :index_v2]
 
   around_action :instrument_with_timer
 
