@@ -38,6 +38,8 @@ class ProjectsController < ApplicationController
 
   around_action :instrument_with_timer
 
+  skip_before_action :authenticate_user!
+
   MAX_BINS = 34
   FAR_FUTURE_DAYS = 100_000
 

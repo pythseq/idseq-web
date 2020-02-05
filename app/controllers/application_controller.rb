@@ -26,7 +26,7 @@ class ApplicationController < ActionController::Base
   end
 
   def authenticate_user!
-    return true
+    # return true
     if @token_based_login_request
       # in token based requests there is no auth0 token to validate, and the user is already validated
       return true

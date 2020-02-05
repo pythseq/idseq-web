@@ -51,9 +51,9 @@ class SamplesController < ApplicationController
     allowed_feature_required("AMR")
   end
 
-  skip_before_action :authenticate_user!
-
   around_action :instrument_with_timer
+
+  skip_before_action :authenticate_user!
 
   PAGE_SIZE = 30
   MAX_PAGE_SIZE_V2 = 100
