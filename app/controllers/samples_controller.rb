@@ -51,7 +51,7 @@ class SamplesController < ApplicationController
     allowed_feature_required("AMR")
   end
 
-  skip_before_action :authenticate_user!, only: [:show, :show_v2, :report_v2, :index_v2]
+  skip_before_action :authenticate_user!
 
   around_action :instrument_with_timer
 
@@ -631,6 +631,8 @@ class SamplesController < ApplicationController
         summary_stats = get_summary_stats(job_stats_hash, pr)
       end
     end
+
+    puts "5:17pm this is the metadata: ", @sample.metadata_with_base_type, ";"
 
     render json: {
       # Pass down base_type for the frontend
