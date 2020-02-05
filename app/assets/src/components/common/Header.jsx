@@ -138,7 +138,6 @@ class Header extends React.Component {
               </a>
             </div>
             <div className={cs.fill} />
-            {!disableNavigation && <MainMenu adminUser={adminUser} />}
             {!disableNavigation && (
               <UserMenuDropDown
                 adminUser={adminUser}

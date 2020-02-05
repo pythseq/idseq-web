@@ -376,14 +376,7 @@ class SamplesView extends React.Component {
           <span className={cs.label}>Selected</span>
         </div>
         <div className={cs.separator} />
-        <div className={cs.actions}>
-          {this.renderCollectionTrigger()}
-          {this.renderHeatmapTrigger()}
-          {this.renderPhyloTreeTrigger()}
-          {allowedFeatures.includes("bulk_downloads")
-            ? this.renderBulkDownloadTrigger()
-            : this.renderDownloadTrigger()}
-        </div>
+        <div className={cs.actions}>{this.renderHeatmapTrigger()}</div>
       </div>
     );
   };
