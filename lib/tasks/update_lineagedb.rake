@@ -171,6 +171,11 @@ class LineageDatabaseImporter
     unchanged_ids = unchanged_records_ids
     puts "#{unchanged_ids.count} records"
 
+    original_ids = TaxonLineage.connection.select_all("SELECT taxid FROM _new_taxid_lineages").pluck("taxid")
+    new_ids = (insert_ids + update_ids + unchanged_ids)
+    diff = original_ids - new_ids
+    puts "DIFF: ", diff, "END"
+
     upgrade_count = insert_ids.count + update_ids.count + unchanged_ids.count
     if new_count != upgrade_count
       raise "Mismatched upgrade counts: #{new_count} and #{upgrade_count}"
