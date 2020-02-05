@@ -171,7 +171,6 @@ export default class SampleViewV2 extends React.Component {
     const { sampleId } = this.props;
     const { pipelineVersion } = this.state;
     const sample = await getSample({ sampleId });
-    console.log("here's what I got: ", sample);
     sample.id = sampleId;
     this.setState(
       {

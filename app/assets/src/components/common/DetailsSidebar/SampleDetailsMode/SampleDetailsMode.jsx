@@ -74,8 +74,6 @@ class SampleDetailsMode extends React.Component {
 
     const processedMetadata = processMetadata(metadata.metadata, true);
 
-    console.log("metadata: ", metadata);
-
     this.setState({
       metadata: processedMetadata,
       lastValidMetadata: processedMetadata,

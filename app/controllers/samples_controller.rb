@@ -632,8 +632,6 @@ class SamplesController < ApplicationController
       end
     end
 
-    puts "5:17pm this is the metadata: ", @sample.metadata_with_base_type, ";"
-
     render json: {
       # Pass down base_type for the frontend
       metadata: @sample.metadata_with_base_type,
@@ -698,8 +696,7 @@ class SamplesController < ApplicationController
   # GET /samples/1
   # GET /samples/1.json
   def show
-    return show_v2
-    if !params[:legacy] && current_user.allowed_feature_list.include?("report_v2")
+    if !params[:legacy]
       show_v2
     else
       @pipeline_run = select_pipeline_run(@sample, params[:pipeline_version])
@@ -763,30 +760,24 @@ class SamplesController < ApplicationController
       :host_genome_id,
       :upload_error,
     ]
-    puts "sample is: ", @sample, ";"
     respond_to do |format|
-      format.html do
-        puts "render as HTML"
-        render 'show_v2'
-      end
+      format.html { render 'show_v2' }
       format.json do
-        res = @sample
-              .as_json(
-                methods: [],
-                only: default_fields,
-                include: {
-                  project: {
-                    only: [:id, :name],
-                  },
-                }
-              ).merge(
-                default_pipeline_run_id: @sample.first_pipeline_run.present? ? @sample.first_pipeline_run.id : nil,
-                pipeline_runs: @sample.pipeline_runs_info,
-                deletable: @sample.deletable?(current_user),
-                editable: current_power.updatable_sample?(@sample)
-              )
-        puts "foobar 1:55pm: ", res, "END"
-        render json: res
+        render json: @sample
+          .as_json(
+            methods: [],
+            only: default_fields,
+            include: {
+              project: {
+                only: [:id, :name],
+              },
+            }
+          ).merge(
+            default_pipeline_run_id: @sample.first_pipeline_run.present? ? @sample.first_pipeline_run.id : nil,
+            pipeline_runs: @sample.pipeline_runs_info,
+            deletable: @sample.deletable?(current_user),
+            editable: current_power.updatable_sample?(@sample)
+          )
       end
     end
   end

@@ -11,8 +11,7 @@ module ApplicationHelper
   end
 
   def current_user
-    return User.find(1)
-    warden&.user(:auth0_user)
+    User.find(1)
   end
 
   def hash_array_json2csv(input_file, output_file, keys)
