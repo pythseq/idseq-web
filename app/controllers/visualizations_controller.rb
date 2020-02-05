@@ -2,6 +2,8 @@ class VisualizationsController < ApplicationController
   include ReportHelper
   include HeatmapHelper
 
+  skip_before_action :authenticate_user!
+
   # This action takes up to 10s for 50 samples so we cache it.
   caches_action(
     :samples_taxons,
