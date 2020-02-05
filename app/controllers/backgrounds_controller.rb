@@ -4,6 +4,8 @@ class BackgroundsController < ApplicationController
   before_action :admin_required, except: [:create, :show_taxon_dist, :index]
   before_action :set_background, only: [:show, :edit, :update, :destroy, :show_taxon_dist]
 
+  skip_before_action :authenticate_user!
+
   # GET /backgrounds
   # GET /backgrounds.json
   def index
