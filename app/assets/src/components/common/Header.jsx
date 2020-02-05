@@ -330,15 +330,6 @@ const UserMenuDropDown = ({
             Privacy Policy
           </a>
         }
-      />,
-      <BareDropdown.Divider key="divider_two" />,
-      <BareDropdown.Item
-        key="logout"
-        text="Logout"
-        onClick={withAnalytics(
-          signOut,
-          "Header_dropdown-logout-option_clicked"
-        )}
       />
     );
     return userDropdownItems;
@@ -377,16 +368,7 @@ const MainMenu = ({ adminUser }) => {
         )}
         href={`/${DISCOVERY_DOMAIN_MY_DATA}`}
       >
-        My Data
-      </a>
-      <a
-        className={cx(
-          cs.item,
-          isSelected(DISCOVERY_DOMAIN_PUBLIC) && cs.selected
-        )}
-        href={`/${DISCOVERY_DOMAIN_PUBLIC}`}
-      >
-        Public
+        All Data
       </a>
       {adminUser && (
         <a
@@ -399,13 +381,6 @@ const MainMenu = ({ adminUser }) => {
           All Data
         </a>
       )}
-      <a
-        className={cx(cs.item, isSelected("samples/upload") && cs.selected)}
-        href={"/samples/upload"}
-        onClick={() => logAnalyticsEvent("Header_upload-link_clicked")}
-      >
-        Upload
-      </a>
     </div>
   );
 };
