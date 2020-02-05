@@ -207,7 +207,6 @@ class SamplesView extends React.Component {
 
     const heatmapOptions = [
       { text: "Taxon Heatmap", value: "/visualizations/heatmap" },
-      { text: "AMR Heatmap", value: "/amr_heatmap" },
     ];
 
     const heatmapIcon = <HeatmapIcon className={cs.icon} />;
