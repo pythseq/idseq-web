@@ -155,3 +155,18 @@ services:
       <<: *web-variables
       <<: *aws-variables
     command: bundle exec "rake pipeline_monitor"
+  activity_worker:
+    image: chanzuckerberg/idseq-web:compose
+    volumes:
+      - .:/app:ro
+      - ./log:/app/log
+      - ./tmp:/app/tmp
+      - ~/.aws:/root/.aws:ro
+      - ~/.aws/cli/cache:/root/.aws/cli/cache
+    depends_on:
+      - db
+    environment:
+      <<: *web-variables
+      <<: *aws-variables
+      <<: *travis-variables
+    command: bundle exec "rake activity_worker"
