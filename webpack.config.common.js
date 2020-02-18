@@ -56,10 +56,17 @@ const config = {
           {
             loader: "css-loader",
             options: {
-              minimize: true,
               sourceMap: true,
-              modules: true,
-              localIdentName: "[local]-[hash:base64:5]",
+              modules: {
+                localIdentName: "[local]-[hash:base64:5]",
+              },
+            },
+          },
+          {
+            loader: "postcss-loader",
+            options: {
+              map: true,
+              plugins: [require("cssnano")({ preset: "default" })],
             },
           },
           {
@@ -84,8 +91,17 @@ const config = {
           {
             loader: "css-loader",
             options: {
-              minimize: true,
               sourceMap: true,
+              modules: {
+                localIdentName: "[local]-[hash:base64:5]",
+              },
+            },
+          },
+          {
+            loader: "postcss-loader",
+            options: {
+              map: true,
+              plugins: [require("cssnano")({ preset: "default" })],
             },
           },
           {
