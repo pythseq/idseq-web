@@ -1,3 +1,5 @@
+require 'logger'
+
 module TaskDefinitions
   def self.test_task(input)
     if input["sample_id"].nil?
@@ -11,10 +13,14 @@ module TaskDefinitions
   end
 
   def self.pause(input)
+    logger = Logger.new(STDOUT)
+
     if input["pause_time"].nil?
       raise "pause_time required"
     end
 
-    sleep(input["pause_time"])
+    logger.info("About to sleep for #{input['pause_time'].to_i} seconds")
+
+    sleep(input["pause_time"].to_i)
   end
 end

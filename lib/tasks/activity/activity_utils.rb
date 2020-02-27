@@ -99,19 +99,29 @@ module StepFunctions
   # activity.start do |input|
   #   { echo: input['value'] }
   # end
-  class Activity
+  class ActivityWorkerMaster
+    attr_accessor :kill_signal_received
+
     # Creates new instance of the activity.
     # @param options [Object] the activity settings
     def initialize(options = {})
-      @states = Aws::States::Client.new
+      @states = Aws::States::Client.new(
+        # This needs to be longer than 60 seconds because the step function returns a task_token with null in 60 seconds.
+        # If there are no activities.
+        http_read_timeout: 90
+      )
       @activity_arn = Validate.required(options[:activity_arn])
       @heartbeat_delay = Validate.positive(options[:heartbeat_delay] || 60)
+
       @queue_max = Validate.positive(options[:queue_max] || 5)
-      @pollers_count = Validate.positive(options[:pollers_count] || 1)
+      # @pollers_count = Validate.positive(options[:pollers_count] || 1)
       @workers_count = Validate.positive(options[:workers_count] || 1)
+
       @max_retry = Validate.positive(options[:workers_count] || 3)
+      @status = "running"
       @logger = Logger.new(STDOUT)
-      @logger.info("Initialized #{@pollers_count} pollers and #{@workers_count} workers.")
+      @logger.info("Initialized #{@workers_count} activity workers.")
+      @kill_signal_received = false
     end
 
     # Starts the execution of the activity.
@@ -123,7 +133,7 @@ module StepFunctions
       @activities = Set.new
       start_heartbeat_worker(@activities)
       start_workers(@activities, block, @sink)
-      start_pollers(@activities, @sink)
+      # start_pollers(@activities, @sink)
       wait
     end
 
@@ -140,6 +150,24 @@ module StepFunctions
     def activities_count
       return 0 if @activities.nil?
       @activities.size
+    end
+
+    def shutdown
+      @logger.info("Commencing shutdown...")
+      @logger.info("Stopping workers...")
+      stop_workers(@workers)
+      @logger.info("Waiting for workers to finish...")
+      wait_workers(@workers)
+      wait_activities_completed
+      @logger.info("Shutting down workers...")
+      shutdown_workers(@workers)
+      shutdown_worker(@heartbeat_worker)
+    rescue => e
+      @logger.error('Unexpected error while shutting down')
+      @logger.error(e)
+    ensure
+      @logger.info("Shutting down master thread...")
+      Thread.current.exit
     end
 
     private
@@ -162,9 +190,11 @@ module StepFunctions
         ActivityWorker.new(
           states: @states,
           block: block,
+          activity_arn: @activity_arn,
           sink: sink,
           activities: activities,
-          max_retry: @max_retry
+          max_retry: @max_retry,
+          manager: self
         )
       end
       @workers.each(&:start)
@@ -181,21 +211,12 @@ module StepFunctions
     end
 
     def wait
-      sleep
-    rescue Interrupt
-      shutdown
-    ensure
-      Thread.current.exit
-    end
-
-    def shutdown
-      stop_workers(@pollers)
-      wait_workers(@pollers)
-      wait_activities_drained
-      stop_workers(@workers)
-      wait_activities_completed
-      shutdown_workers(@workers)
-      shutdown_worker(@heartbeat_worker)
+      loop do
+        sleep(1)
+        if @kill_signal_received
+          shutdown
+        end
+      end
     end
 
     def shutdown_workers(workers)
@@ -236,8 +257,15 @@ module StepFunctions
         @logger = Logger.new(STDOUT)
         @running = false
         @thread = nil
+        # Specifies whether this worker can be killed.
+        # We don't want workers to be killed if they are in the middle of a task.
+        @can_kill = true
+        # Specifies whether a kill signal has been received.
+        # If so, the worker will shutdown after completing its current "run" loop.
+        @kill_signal_received = false
       end
 
+      # For any worker, the run function is looped repeatedly until @running is false or an error occurs.
       def run
         raise 'Method run hasn\'t been implemented'
       end
@@ -264,15 +292,22 @@ module StepFunctions
 
       def stop
         @running = false
+        # If the task can be killed, kill the task immediately.
+        if @can_kill
+          kill
+        end
       end
 
+      # Kill the thread.
       def kill
         return if @thread.nil?
         @thread.kill
         @thread = nil
       end
 
+      # Wait for the thread to complete.
       def wait
+        return if @thread.nil?
         @thread.join
       end
     end
@@ -306,26 +341,59 @@ module StepFunctions
 
     class ActivityWorker < Worker
       def initialize(options = {})
+        @can_kill = true
         @states = options[:states]
         @block = options[:block]
         @sink = options[:sink]
+        @activity_arn = options[:activity_arn]
         @activities = options[:activities]
         @max_retry = options[:max_retry]
+        @manager = options[:manager]
         @logger = Logger.new(STDOUT)
       end
 
       def run
-        activity_task = @sink.pop
-        @logger.info("Starting task")
-        result = @block.call(JSON.parse(activity_task.input))
-        @logger.info("Finishing task")
-        send_task_success(activity_task, result)
-      rescue => e
-        @logger.error(e)
-        send_task_failure(activity_task, e)
-      ensure
-        @activities.delete(activity_task.task_token) unless activity_task.nil?
+        # Long-poll for activities.
+        @can_kill = true
+        activity_task = StepFunctions.with_retries(max_retry: @max_retry) do
+          begin
+            @logger.info("Starting long-poll for step function activities...")
+            received_activity_task = @states.get_activity_task(activity_arn: @activity_arn)
+            @can_kill = false
+            received_activity_task
+          rescue => e
+            @logger.error('Failed to retrieve activity task')
+            @logger.error(e)
+          end
+        end
+        # If no activity is detected after the long-poll expires (60 seconds),
+        # a taskToken with a null string is returned. Restart the long-poll.
+        if activity_task.nil? || activity_task == true || activity_task.task_token.nil?
+          @logger.info("Long-poll ended with no activity detected...")
+          return
+        end
+        # If an activity is received, execute the task specified by the input parameters.
+        @logger.info("Received activity with input: #{activity_task.input}")
+        begin
+          @activities.add(activity_task)
+          @logger.info("Starting task")
+          result = @block.call(JSON.parse(activity_task.input))
+          @logger.info("Finishing task")
+          send_task_success(activity_task, result)
+        rescue => e
+          @logger.error(e)
+          send_task_failure(activity_task, e)
+        ensure
+          @activities.delete(activity_task)
+        end
       end
+      #      ensure
+      #        @logger.info("ensure")
+      #        if @manager.status == "draining"
+      #          @logger.info("Detected draining status after task complete. Initializing shutdown.")
+      #          @manager.shutdown
+      #        end
+      #      end
 
       def send_task_success(activity_task, result)
         StepFunctions.with_retries(max_retry: @max_retry) do
@@ -334,9 +402,9 @@ module StepFunctions
               task_token: activity_task.task_token,
               output: JSON.dump(result)
             )
-            @logger.info("Sent task success for activity with input: #{activity_task.task_token}")
+            @logger.info("Sent task success for activity with input: #{activity_task.input}")
           rescue => e
-            @logger.error('Failed to send task success')
+            @logger.error("Failed to send task success for activity with input: #{activity_task.input}")
             @logger.error(e)
           end
         end
@@ -349,9 +417,9 @@ module StepFunctions
               task_token: activity_task.task_token,
               cause: error.message
             )
-            @logger.info("Sent task failure for activity with input: #{activity_task.task_token}")
+            @logger.info("Sent task failure for activity with input: #{activity_task.input}")
           rescue => e
-            @logger.error('Failed to send task failure')
+            @logger.error("Failed to send task failure for activity with input: #{activity_task.input}")
             @logger.error(e)
           end
         end
@@ -369,20 +437,20 @@ module StepFunctions
 
       def run
         sleep(@heartbeat_delay)
-        @activities.each do |token|
-          send_heartbeat(token)
+        @activities.each do |activity_task|
+          send_heartbeat(activity_task)
         end
       end
 
-      def send_heartbeat(token)
+      def send_heartbeat(activity_task)
         StepFunctions.with_retries(max_retry: @max_retry) do
           begin
             @states.send_task_heartbeat(
-              task_token: token
+              task_token: activity_task.task_token
             )
-            @logger.info("Heartbeat sent!")
+            @logger.info("Heartbeat sent for activity with input: #{activity_task.input}!")
           rescue => e
-            @logger.error('Failed to send heartbeat for activity')
+            @logger.error("Failed to send heartbeat for activity with input: #{activity_task.input}")
             @logger.error(e)
           end
         end

@@ -1,0 +1,30 @@
+
+def t(num_samples, coverage_threshold, excluded_project_ids)
+  samples = Sample.all.where.not(project_id: excluded_project_ids).last(num_samples)
+  matches = []
+
+  samples.each do |sample|
+    pr = sample.first_pipeline_run
+    coverage_viz_summary = JSON.parse(helper.get_s3_file(pr.coverage_viz_summary_s3_path))
+    coverage_viz_summary.each do |taxid, accessions|
+      if taxid == "9606"
+        next
+      end
+      total_coverage = 0
+      accessions["best_accessions"].each do |accession|
+        total_coverage += accession["coverage_depth"]
+      end
+
+      if total_coverage > coverage_threshold
+        tc = TaxonCount.where(pipeline_run_id: pr.id, tax_id: taxid.to_i).first
+        if tc.nil?
+          next
+        end
+        taxname = tc.name
+        matches << [sample.id, taxname, total_coverage]
+      end
+    end
+  end
+
+  matches
+end

@@ -168,5 +168,4 @@ services:
     environment:
       <<: *web-variables
       <<: *aws-variables
-      <<: *travis-variables
     command: bundle exec "rake activity_worker"
