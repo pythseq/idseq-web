@@ -4,13 +4,46 @@ SCRIPT_DIR=$(dirname "$0")
 source "$SCRIPT_DIR/_global_vars.sh"
 source "$SCRIPT_DIR/_shared_functions.sh"
 
-# Deploy a git rev to an environment.
-# This command will wait for the commit of this git rev
-# to be available in Docker hub and passed all checks in github before deploying it
+__help() {
+cat <<EOS
+Deploys the docker image related to a git rev.
+
+Usage: $0 [Optional arguments] <env> <rev>
+
+  Positional arguments:
+      env      Environment to deploy (ex: staging, prod, sandbox)
+      rev      any git rev following these conventions:
+               https://git-scm.com/docs/git-rev-parse#_specifying_revisions
+               (ex: /origin/prod, v_0.21_prod, d13a89da)
+
+  Optional arguments:
+      --skip-ecr-check        Skip the check that ensures the docker image is already in ECR
+      --skip-github-check     Skip the check that ensures all github checks passed for that commit
+      --help                  This help file
+EOS
+}
+
+__params() {
+  declare flag_skip_ecr_check=
+  declare flag_skip_github_check=
+  while getopts ab: name
+  do
+      case $name in
+      skip-ecr-check)    flag_skip_ecr_check=1;;
+      skip-github-check) flag_skip_github_check=1;;
+      ?)   printf "Banana %s\n" $0
+            exit 2;;
+      esac
+  done
+  shift $(($OPTIND - 1))
+  printf "Remaining arguments are: %s\n$*"
+  echo flag_skip_ecr_check=$flag_skip_ecr_check
+  echo flag_skip_github_check=$flag_skip_github_check
+}
+
 main() {
   declare env="$1" # staging / prod
   declare git_rev="$2" # https://git-scm.com/docs/git-rev-parse#_specifying_revisions
-
   _git_fetch_and_cleanup
 
   declare sha; sha=$(git log -n1 "${git_rev}" --format=%h --abbrev=8)
@@ -28,7 +61,7 @@ main() {
     _exit_with_err_msg "Commit ${sha} is in an invalid state. Aborting deployment. More details at $GITHUB_REPOSITORY_URL/commits/${env}"
   fi
 
-  "$SCRIPT_DIR/../deploy" "$env" "sha-$sha"
+  echo "$SCRIPT_DIR/../deploy" "$env" "sha-$sha"
 }
 
 __docker_tag_exists() {
@@ -71,4 +104,5 @@ __retry() {
   return $exit_code
 }
 
-main "$@"
+# main "$@"
+__params
