@@ -4,6 +4,9 @@ class BulkDownloadsController < ApplicationController
   include PipelineRunsHelper
   include AppConfigHelper
 
+  PUBLIC_NCOV_ENDPOINTS = [:validate_sample_ids].freeze
+  skip_before_action :authenticate_user!, only: PUBLIC_NCOV_ENDPOINTS
+
   UPDATE_WITH_TOKEN_ACTIONS = [:success_with_token, :error_with_token, :progress_with_token].freeze
 
   skip_before_action :authenticate_user!, :verify_authenticity_token, only: UPDATE_WITH_TOKEN_ACTIONS
